@@ -29,7 +29,7 @@ func main() {
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			input := cmd.StringArg("input")
-			outputDir := "outputs/"
+			outputDir := "outputs"
 
 			err := os.MkdirAll(outputDir, os.ModePerm)
 			if err != nil {
@@ -61,7 +61,7 @@ func main() {
 			sheet := "Sheet1"
 
 			// Header
-			headers := []string{"Client Name", "Customer Name", "Status", "Ticket Category", "Module", "Detail Module", "Created At", "Title", "Solved At"}
+			headers := []string{"Client Name", "Customer Name", "Status", "", "Ticket Category", "Module", "Detail Module", "Created At", "Title", "", "Solved At", "Date"}
 			for i, h := range headers {
 				cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 				f.SetCellValue(sheet, cell, h)
@@ -72,24 +72,27 @@ func main() {
 				f.SetCellValue(sheet, fmt.Sprintf("A%d", i+2), row.CustomFields["Client Name"])
 				f.SetCellValue(sheet, fmt.Sprintf("B%d", i+2), row.CustomerName)
 				f.SetCellValue(sheet, fmt.Sprintf("C%d", i+2), mappingStatus(row.Status))
-				f.SetCellValue(sheet, fmt.Sprintf("D%d", i+2), row.CustomFields["Ticket Category"])
-				f.SetCellValue(sheet, fmt.Sprintf("E%d", i+2), row.CustomFields["Module"])
-				f.SetCellValue(sheet, fmt.Sprintf("F%d", i+2), row.CustomFields["Detail Module"])
-				f.SetCellValue(sheet, fmt.Sprintf("G%d", i+2), convertTimeFormat("January 2, 2006, 3:04 PM", row.CreatedAt, "15:04"))
-				f.SetCellValue(sheet, fmt.Sprintf("H%d", i+2), row.Title)
-				f.SetCellValue(sheet, fmt.Sprintf("I%d", i+2), convertTimeFormat("January 2, 2006, 3:04 PM", row.ResolvedAt, "15:04"))
+				f.SetCellValue(sheet, fmt.Sprintf("D%d", i+2), "")
+				f.SetCellValue(sheet, fmt.Sprintf("E%d", i+2), row.CustomFields["Ticket Category"])
+				f.SetCellValue(sheet, fmt.Sprintf("F%d", i+2), row.CustomFields["Module"])
+				f.SetCellValue(sheet, fmt.Sprintf("G%d", i+2), row.CustomFields["Detail Module"])
+				f.SetCellValue(sheet, fmt.Sprintf("H%d", i+2), convertTimeFormat("January 2, 2006, 3:04 PM", row.CreatedAt, "15:04"))
+				f.SetCellValue(sheet, fmt.Sprintf("I%d", i+2), row.Title)
+				f.SetCellValue(sheet, fmt.Sprintf("J%d", i+2), "")
+				f.SetCellValue(sheet, fmt.Sprintf("K%d", i+2), convertTimeFormat("January 2, 2006, 3:04 PM", row.ResolvedAt, "15:04"))
+				f.SetCellValue(sheet, fmt.Sprintf("L%d", i+2), convertTimeFormat("January 2, 2006, 3:04 PM", row.ResolvedAt, "2006-01-02"))
 			}
 
 			f.SetColWidth(sheet, "A", "I", 30)
 
-			outputFile := fmt.Sprintf("%s/output_%s.xlsx", outputDir, time.Now().Format("20060102150405"))
+			outputFile := fmt.Sprintf("%s/output_%s.xlsx", outputDir, time.Now().Format("2006_01_02__15_04_05"))
 
 			// Simpan file Excel
 			if err := f.SaveAs(outputFile); err != nil {
 				panic(fmt.Errorf("error saving Excel file: %w", err))
 			}
 
-			fmt.Println("Data berhasil ditulis ke output.xlsx")
+			fmt.Printf("Data berhasil ditulis ke %s\n", outputFile)
 			return nil
 		},
 	}
@@ -108,8 +111,15 @@ func convertTimeFormat(inputLayout string, timeStr string, outputLayout string) 
 }
 
 func mappingStatus(status string) string {
-	if status == "Resolved" {
+	switch status {
+	case "Resolved":
 		return "Solved"
+	case "On-Hold":
+		return "L3"
+	case "Open":
+		return "L2"
+	case "Pending":
+		return "L1"
 	}
 	return status
 }
