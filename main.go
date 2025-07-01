@@ -76,11 +76,11 @@ func main() {
 				f.SetCellValue(sheet, fmt.Sprintf("E%d", i+2), row.CustomFields["Ticket Category"])
 				f.SetCellValue(sheet, fmt.Sprintf("F%d", i+2), row.CustomFields["Module"])
 				f.SetCellValue(sheet, fmt.Sprintf("G%d", i+2), row.CustomFields["Detail Module"])
-				f.SetCellValue(sheet, fmt.Sprintf("H%d", i+2), convertTimeFormat("January 2, 2006, 3:04 PM", row.CreatedAt, "15:04"))
+				f.SetCellValue(sheet, fmt.Sprintf("H%d", i+2), converTimeFormats(row.CreatedAt, "15:04"))
 				f.SetCellValue(sheet, fmt.Sprintf("I%d", i+2), row.Title)
 				f.SetCellValue(sheet, fmt.Sprintf("J%d", i+2), "")
-				f.SetCellValue(sheet, fmt.Sprintf("K%d", i+2), convertTimeFormat("January 2, 2006, 3:04 PM", row.ResolvedAt, "15:04"))
-				f.SetCellValue(sheet, fmt.Sprintf("L%d", i+2), convertTimeFormat("January 2, 2006, 3:04 PM", row.ResolvedAt, "2006-01-02"))
+				f.SetCellValue(sheet, fmt.Sprintf("K%d", i+2), converTimeFormats(row.ResolvedAt, "15:04"))
+				f.SetCellValue(sheet, fmt.Sprintf("L%d", i+2), converTimeFormats(row.ResolvedAt, "2006-01-02"))
 			}
 
 			f.SetColWidth(sheet, "A", "I", 30)
@@ -100,6 +100,24 @@ func main() {
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func converTimeFormats(timeStr string, outputLayout string) string {
+	layouts := []string{
+		time.RFC3339Nano,
+		"January 2, 2006, 3:04 PM",
+		"2006-01-02T15:04:05.000000",
+	}
+
+	for _, layout := range layouts {
+		timed, err := time.Parse(layout, timeStr)
+		if err != nil {
+			continue
+		}
+		return timed.Format(outputLayout)
+	}
+
+	return "-"
 }
 
 func convertTimeFormat(inputLayout string, timeStr string, outputLayout string) string {
