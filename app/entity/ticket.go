@@ -16,7 +16,7 @@ type Ticket struct {
 	CustomerEmail            string       `json:"Customer Email"`
 	AssignedAt               string       `json:"Assigned At"`
 	AgentEmail               string       `json:"Agent Email"`
-	NumberOfPosts            string       `json:"Number of Posts"`
+	NumberOfPosts            int          `json:"Number of Posts"`
 	Channel                  string       `json:"Channel"`
 	AgentName                string       `json:"Agent Name"`
 	AssigneeFirstRespondedAt string       `json:"Assignee First Responded At"`
